@@ -1,0 +1,38 @@
+# thymeleaf
+spring:
+  thymeleaf:
+    cache: false
+    mode: HTML5
+  datasource: # 数据源
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/miaosha?useUnicode=true&characterEncoding=utf8&&useSSL=false&serverTimezone=GMT-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid: # 连接池通用配置
+      max-active: 100
+      initial-size: 10
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      validation-query: select 'x'
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-open-prepared-statements: 20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters: stat, wall, log4j
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+
+# mybatis
+mybatis:
+  type-aliases-package: com.smallpineapple.seckill.domain # 配置类型别名的包
+  configuration:
+    map-underscore-to-camel-case: true # 将domain包以下划线的表名转换为驼峰命名
+    default-fetch-size: 100 #
+    default-statement-timeout: 3000 # 每条语句最大等待时间
+  mapper-locations: classpath:com/smallpineapple/seckill/dao/*.xml # 扫描 mapper 文件, 用于 mapper 接口和配置文件的映射
