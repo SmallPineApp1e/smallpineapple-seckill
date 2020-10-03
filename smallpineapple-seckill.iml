@@ -131,5 +131,8 @@
     <orderEntry type="library" name="Maven: com.alibaba:druid:1.1.21" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.30" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" name="Maven: redis.clients:jedis:3.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-pool2:2.8.1" level="project" />
+    <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.70" level="project" />
   </component>
 </module>

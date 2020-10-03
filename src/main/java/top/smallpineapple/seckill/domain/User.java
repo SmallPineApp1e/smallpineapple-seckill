@@ -3,6 +3,8 @@ package top.smallpineapple.seckill.domain;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 /**
  * 用户
  * 
@@ -12,7 +14,9 @@ import lombok.ToString;
  */
 @Data
 @ToString
-public class User {
+public class User implements Serializable {
+
+
 
     /** 用户主键 */
     private Integer id;

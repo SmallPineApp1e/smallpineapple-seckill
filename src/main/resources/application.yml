@@ -27,6 +27,19 @@ spring:
       filters: stat, wall, log4j
       # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
       connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    jedis:
+      pool:
+        # 最大空闲线程 10
+        max-idle: 10
+        # 最大等待时间 3 ms
+        max-wait: 3
+        # 最大活跃线程 10
+        max-active: 10
+        # 空闲线程经过 3 秒后被回收
+        time-between-eviction-runs: 3000
 
 # mybatis
 mybatis:
