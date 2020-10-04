@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import top.smallpineapple.seckill.common.redisKey.UserKey;
 import top.smallpineapple.seckill.domain.User;
 import top.smallpineapple.seckill.service.UserService;
+import top.smallpineapple.seckill.util.MD5Util;
 import top.smallpineapple.seckill.util.RedisUtil;
 
 @SpringBootTest
@@ -40,6 +41,12 @@ class SmallpineappleSeckillApplicationTests {
     public void testGetKey() {
         String realKey = UserKey.USER_ID_KEY.getPrefix() + "" + 10;
         log.info(realKey + ":{}", redisUtil.get(realKey));
+    }
+
+    @Test
+    public void testMd5() {
+        String inputPassword = "123456";
+        log.info("md5(明文+固定salt):{}", MD5Util.inputPassFormPass(inputPassword));
     }
 
 }

@@ -28,7 +28,7 @@ mybatis:
 
 ### 引入 Druid 数据源
 
-1、替换DBCP和C3P0。Druid提供了一个高效、功能强大、可扩展性好的数据库连接池。
+1、替换 DBCP 和 C3P0。Druid提供了一个高效、功能强大、可扩展性好的数据库连接池。
 
 2、可以监控数据库访问性能，Druid内置提供了一个功能强大的StatFilter插件，能够详细统计SQL的执行性能，这对于线上分析数据库访问性能有帮助。
 
@@ -74,7 +74,7 @@ spring:
 ```
 
 需要注意几个地方：
-1. 启动类上需要加上`@MapperScan`注解，否则无法自动扫描到 Mapper 类
+1. 启动类上需要加上`@MapperScan`注解，否则**无法自动扫描到 Mapper 类**
 2. Druid 监控日志如果包含 log4j 需要手动引入 log4j 的依赖，否则启动会报错
 3. MySQL 8.0 需要在路径后面手动配上时区 serverTimezone=GMT-8，因为 8.0 开始 MySQL 不再是默认一个时区
 
@@ -162,3 +162,42 @@ public class RedisConfig {
 1. Map 集合：Map 接口 - AbstractMap 抽象类 - HashMap 子类···
 2. Set 集合：Set 接口 - AbstractSet 抽象类 - HashSet 子类···
 3. List 集合：List 接口 - AbstractList 抽象类 - ArrayList 子类···
+
+## 实现登录功能
+
+### 数据库设计
+
+```sql
+CREATE TABLE `miaosha_user`  (
+  `id` bigint(20) NOT NULL COMMENT '用户ID，手机号码',
+  `nickname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `password` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'MD5(MD5(pass明文+固定salt) + salt)',
+  `salt` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `head` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '头像，云存储的ID',
+  `register_date` datetime(0) NULL DEFAULT NULL COMMENT '注册时间',
+  `last_login_date` datetime(0) NULL DEFAULT NULL COMMENT '上蔟登录时间',
+  `login_count` int(11) NULL DEFAULT 0 COMMENT '登录次数',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+```
+
+### 明文密码两次 MD5 处理防止被盗
+
+1. 用户端：PASS0 = MD5( 明文密码 + 固定 Salt )
+2. 服务端：PASS1 = MD5 ( PASS0 + 随机 Salt )
+
+由于 HTTP 明文传输的不安全性，在用户提交密码到服务器时，有可能会被其他人截获该密码，冒充用户甚至篡改信息，所以：
+
+**用户端和服务器共同协商一个盐值（Salt），该盐值只有双方知道，第三方无法知道，在用户提交密码时，用户端会对该密码进行加盐，之后通过 MD5 散列后传递给服务器，尽管 MD5 可以碰撞出来，但由于不知道盐值，所以第三者也无法解密出用户的原始密码**。
+
+> 但如果第三者获取到客户端的盐值并发现是如何加盐的，其实也是能够破解的，所以没有绝对安全的办法，除非使用 HTTPS
+
+而服务器拿到加盐且散列后的密码串时，会对散列后的密码值进行**再一次的加盐（该盐值是服务器随机产生的）**，加了盐后，再做一次 MD5 散列，得到散列后的最终密码串，然后将**随机 Salt 和 最终的密码串**保存在数据库中，整个密码串看起来就是下面这个样子。
+
+> MD5 ( MD5 (用户输入的密码 + 协商盐值) + 随机盐值 )
+
+第二次 加盐 和 MD5 的目的：如果数据库被盗，那么第三者也无法通过彩虹表碰撞 MD5 的方式破解出密码，因为第三者不知道盐值是如何加入到原密码串的；即使破解出来，也只能得到 **MD5 (用户输入的密码 + 协商盐值)**，再碰撞一次，且不谈安全性，光是**时间成本**就让他们吃不消了。  
+
+### JSR 303 参数校验 + 全局异常统一处理
+
+### 分布式 Session（重要！）
