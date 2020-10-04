@@ -12,7 +12,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class MD5Util {
 
     /** 固定 salt 值, 与前端沟通 */
-    public static final String SALT = "dfiasypweiorfdfsdu";
+    public static final String SALT = "1a2b3c";
 
     /**
      * 用户
@@ -29,7 +29,7 @@ public class MD5Util {
      * @return 第一次加盐且md5散列的密码串
      */
     public static String inputPassFormPass(String formPass) {
-        return md5(SALT.charAt(0) + SALT.charAt(2) + formPass + SALT.charAt(5) + SALT.charAt(4));
+        return md5("" + SALT.charAt(0) + SALT.charAt(2) + formPass + SALT.charAt(5) + SALT.charAt(4));
     }
 
     /**
@@ -39,7 +39,7 @@ public class MD5Util {
      * @return 第二次加盐散列后的密码串
      */
     public static String formPass2DbPass(String formPass, String salt) {
-        return md5(salt.charAt(0) + salt.charAt(2) + formPass + salt.charAt(5) + salt.charAt(4));
+        return md5("" + salt.charAt(0) + salt.charAt(2) + formPass + salt.charAt(5) + salt.charAt(4));
     }
 
     /**
