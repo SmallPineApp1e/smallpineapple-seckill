@@ -8,6 +8,6 @@ public interface MiaoshaUserService {
 
     MiaoshaUser getById(long id);
 
-    CodeMsg login(LoginVo loginVo);
+    boolean login(LoginVo loginVo);
 
 }

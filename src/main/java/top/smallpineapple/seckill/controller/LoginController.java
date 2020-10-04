@@ -14,6 +14,8 @@ import top.smallpineapple.seckill.service.MiaoshaUserService;
 import top.smallpineapple.seckill.util.ValidatorUtil;
 import top.smallpineapple.seckill.vo.LoginVo;
 
+import javax.validation.Valid;
+
 /**
  * 用户登录控制类
  *
@@ -37,23 +39,10 @@ public class LoginController {
 
      @RequestMapping("/do_login")
      @ResponseBody
-     public Result<Boolean> doLogin(LoginVo loginVo) {
+     public Result<Boolean> doLogin(@Valid LoginVo loginVo) {
          LOGGER.info("loginVo:{}", loginVo);
-         if (StringUtils.isEmpty(loginVo.getPassword())) {
-             return Result.error(CodeMsg.PASSWORD_EMPTY);
-         }
-         if (StringUtils.isEmpty(loginVo.getMobile())) {
-             return Result.error(CodeMsg.MOBILE_EMPTY);
-         }
-         if (ValidatorUtil.isMobile(loginVo.getMobile())) {
-             return Result.error(CodeMsg.MOBILE_ERROR);
-         }
-         CodeMsg msg = miaoshaUserService.login(loginVo);
-         if (msg.getCode() == 0) {
-             return Result.success(null);
-         } else {
-             return Result.error(msg);
-         }
+         boolean isSuccess = miaoshaUserService.login(loginVo);
+         return isSuccess ? Result.success(null) : Result.error(CodeMsg.SERVER_ERROR);
      }
 
 }

@@ -2,6 +2,7 @@ package top.smallpineapple.seckill.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.smallpineapple.seckill.common.exception.GlobleException;
 import top.smallpineapple.seckill.dao.MiaoshaUserDao;
 import top.smallpineapple.seckill.domain.CodeMsg;
 import top.smallpineapple.seckill.domain.MiaoshaUser;
@@ -30,23 +31,23 @@ public class MiaoshaUserServiceImpl implements MiaoshaUserService {
     }
 
     @Override
-    public CodeMsg login(LoginVo loginVo) {
+    public boolean login(LoginVo loginVo) {
         if (Objects.isNull(loginVo)) {
-            return CodeMsg.SERVER_ERROR;
+            throw new GlobleException(CodeMsg.SERVER_ERROR);
         }
         String mobile = loginVo.getMobile();
         String formPassword = loginVo.getPassword();
         MiaoshaUser miaoshaUser = getById(Long.parseLong(mobile));
         if (Objects.isNull(miaoshaUser)) {
-            return CodeMsg.MOBILE_NOT_EXIST;
+            throw new GlobleException(CodeMsg.MOBILE_NOT_EXIST);
         }
         // 验证密码
         String dbPassword = miaoshaUser.getPassword();
         String dbSalt = miaoshaUser.getSalt();
         String calcPass = MD5Util.formPass2DbPass(formPassword, dbSalt);
         if (!dbPassword.equals(calcPass)) {
-            return CodeMsg.PASSWORD_ERROR;
+            throw new GlobleException(CodeMsg.PASSWORD_ERROR);
         }
-        return CodeMsg.SUCCESS;
+        return true;
     }
 }

@@ -200,6 +200,83 @@ CREATE TABLE `miaosha_user`  (
 
 ### JSR 303 参数校验 + 全局异常统一处理
 
+引入依赖
+
+```xml
+<!-- JSR 303 参数校验-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+
+常用注解解析：
+
+| 注解                   | 解析                                      |
+| ---------------------- | ----------------------------------------- |
+| @NotNull               | 参数不能为 NULL，如果是空字符串“”也会通过 |
+| @Length(min=)          | 最小长度是 min···                         |
+| @Email                 | 匹配邮箱的正则表达式                      |
+| @NotBlank              | 不能为 NULL，且不能为空字符串“”           |
+| @Range(min = , max = ) | 大小范围是[min, max]                      |
+
+我们还需要自己实现一个手机号码的**注解校验器**。`@IsMobile` + `IsMobileValidator`实现自定义校验注解。
+
+我们发现参数传递到服务器端后有异常时，可以定义**全局异常统一处理**，这样就不需要在每个方法内部自己处理异常，让代码更加简洁。
+
+使用 `@ControllerAdvice` 定义全局异常处理类，`@ExceptionHanlder` 标注在方法上，表明该方法捕获哪一类异常，这样在业务逻辑中抛出的异常经过全局异常处理类进行处理，就不需要在业务代码中单独处理了！
+
+而我们在项目场景开发时，遇到特殊的业务异常，通常是抛出自己的异常，而不是作为返回值返回给前端的，所以，在发生各种各样的业务异常时，我们可以为这些异常统一归为一个自定义异常`GlobleException`，然后交给全局异常处理类进行捕获并处理，由异常处理类返回对应的错误信息给前端，这样就不需要在每个业务异常里面单独处理，只需要抛出异常即可！
+
+```java
+/**
+ * 全局统一异常处理
+ *
+ * @author zengzhijie
+ * @since 2020/10/4 15:46
+ * @version 1.0
+ */
+@RestControllerAdvice
+public class GlobleExceptionHandler {
+
+    @ExceptionHandler(value = BindException.class)
+    public Result<String> bindExceptionHandler(HttpServletRequest request, BindException e) {
+
+        ObjectError error = e.getAllErrors().get(0);
+        String msg = error.getDefaultMessage();
+        return Result.error(CodeMsg.BIND_ERROR.fillArgs(msg));
+
+    }
+
+    @ExceptionHandler(value = GlobleException.class)
+    public Result<String> globleExceptionHandler(HttpServletRequest request, GlobleException e) {
+        return Result.error(e.getCm());
+    }
+
+}
+/**
+ * 业务产生的自定义异常
+ *
+ * @author zengzhijie
+ * @since 2020/10/4 16:04
+ * @version 1.0
+ */
+@Getter
+public class GlobleException extends RuntimeException {
+
+    private CodeMsg cm;
+
+    public GlobleException(CodeMsg cm) {
+
+        super(cm.toString());
+        this.cm = cm;
+
+    }
+}
+```
+
+
+
 ### 分布式 Session（重要！）
 
 
@@ -219,6 +296,10 @@ CREATE TABLE `miaosha_user`  (
 ![](http://cdn.smallpineapple.top/20201004145331.png)
 
 我们只需要把`/static`去掉即可。
+
+### 使用 JSR 303 校验注解后不生效
+
+需要在 Controller 层接收参数的参数前添加注解 `@Valid`，否则注解不会生效。
 
 ## 常见知识点
 
