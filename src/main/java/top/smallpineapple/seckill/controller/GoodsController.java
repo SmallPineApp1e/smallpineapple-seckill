@@ -5,17 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import top.smallpineapple.seckill.common.redisKey.MiaoshaUserKey;
 import top.smallpineapple.seckill.domain.MiaoshaUser;
-import top.smallpineapple.seckill.service.MiaoshaUserService;
-import top.smallpineapple.seckill.service.impl.MiaoshaUserServiceImpl;
+import top.smallpineapple.seckill.service.GoodsService;
+import top.smallpineapple.seckill.vo.GoodsVo;
 
-import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * 商品控制层
@@ -26,17 +22,18 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Controller
 @RequestMapping("/goods")
-public class GoodController {
+public class GoodsController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GoodController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GoodsController.class);
 
     @Autowired
-    private MiaoshaUserService miaoshaUserService;
+    private GoodsService goodsService;
 
     @GetMapping("/to_list")
     public String toGoodList(Model model, MiaoshaUser user) {
         LOGGER.info("user:{}", user);
-        model.addAttribute("user", user);
+        List<GoodsVo> goodsVos = goodsService.listGoodsVo();
+        model.addAttribute("goodsList", goodsVos);
         return "goods_list";
     }
 
