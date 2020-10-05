@@ -59,8 +59,9 @@ public class MiaoshaUserServiceImpl implements MiaoshaUserService {
         if (!dbPassword.equals(calcPass)) {
             throw new GlobleException(CodeMsg.PASSWORD_ERROR);
         }
-
-        addCookie(response, miaoshaUser);
+        // 生成 Cookie
+        String token = UUIDUtil.createUUID();
+        addCookie(response, token, miaoshaUser);
 
         return true;
     }
@@ -74,7 +75,7 @@ public class MiaoshaUserServiceImpl implements MiaoshaUserService {
         // 延长有效期
         MiaoshaUser miaoshaUser = (MiaoshaUser) redisUtil.get(MiaoshaUserKey.token.getPrefix() + token);
         if (miaoshaUser != null) {
-            addCookie(response, miaoshaUser);
+            addCookie(response, token, miaoshaUser);
         }
         return miaoshaUser;
 
@@ -85,9 +86,7 @@ public class MiaoshaUserServiceImpl implements MiaoshaUserService {
      * @param response
      * @param miaoshaUser
      */
-    private void addCookie(HttpServletResponse response, MiaoshaUser miaoshaUser) {
-        // 生成 Cookie
-        String token = UUIDUtil.createUUID();
+    private void addCookie(HttpServletResponse response, String token, MiaoshaUser miaoshaUser) {
         // 将该 token 写入到 Redis 当中, 标识当前用户
         redisUtil.set(MiaoshaUserKey.token.getPrefix() + token,
                 miaoshaUser, MiaoshaUserKey.token.expireSeconds());

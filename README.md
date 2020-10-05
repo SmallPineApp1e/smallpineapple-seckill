@@ -295,6 +295,20 @@ public class GlobleException extends RuntimeException {
 
 如果用户在这段时间内一直在访问，那么过期时间应该也延后一些，避免用户一直在访问，突然被告知未登录的乱象！
 
+## 秒杀功能（重点！）
+
+### 数据库设计
+
+![](http://cdn.smallpineapple.top/20201005195005.png)
+
+
+
+### 功能实现
+
+
+
+
+
 ## 常见错误
 
 ### 导入 JS 包却找不到
