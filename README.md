@@ -316,3 +316,112 @@ public class GlobleException extends RuntimeException {
 ### 防 SQL 注入
 
 MyBatis 中编写 SQL 语句时 #{} 和 ${} 都可以放入值，但是 \${} 有可能会导致 SQL 注入风险，原因在于它直接将 SQL 语句和参数值拼接起来，如果使用类似于`OR 1 = 1 -` 类型的参数，就会导致所有参数都成立！而 #{} 会将 SQL 进行预编译，生成一条 SQL 语句，并在参数位置加上双引号，如果想进行 SQL 注入，那么 SQL 语句会报错，不会成功编译 SQL 语句。
+
+### 自定义参数解析
+
+在分布式 Session 中，我们一开始需要在参数中传入 `cookieToken` 和 `paramToken` 两个参数值，其它需要登录校验的方法也需要传入这两个参数值，导致代码非常**冗余**。
+
+我们希望在传入控制层的参数中直接得到一个 MiaoshaUser 对象，而不希望自己再去 Redis 中查询，这就是一种优化手段。
+
+我们自己实现一个**参数解析器**
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private UserArgumentResolverHandler userArgumentResolverHandler;
+
+    // SpringMVC 会回调该方法，然后往控制层中对应的方法参数赋值
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(userArgumentResolverHandler);
+    }
+
+}
+```
+
+```java
+@Component
+public class UserArgumentResolverHandler implements HandlerMethodArgumentResolver {
+
+    @Autowired
+    private MiaoshaUserService miaoshaUserService;
+
+    /**
+     * 定义解析的参数类型
+     * @param methodParameter
+     * @return
+     */
+    @Override
+    public boolean supportsParameter(MethodParameter methodParameter) {
+        Class<?> clazz = methodParameter.getParameterType();
+        return clazz == MiaoshaUser.class;
+    }
+
+    /**
+     * 往该参数赋值
+     * @param methodParameter
+     * @param modelAndViewContainer
+     * @param nativeWebRequest
+     * @param webDataBinderFactory
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer,
+                                  NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
+        HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
+        HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);
+        String paramToken = request.getParameter(MiaoshaUserServiceImpl.COOKIE_NAME_TOKEN);
+        String cookieToken = getCookieValue(request, MiaoshaUserServiceImpl.COOKIE_NAME_TOKEN);
+        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
+            return null;
+        }
+        String token = StringUtils.isEmpty(cookieToken) ? paramToken : cookieToken ;
+        return miaoshaUserService.getByToken(response, token);
+    }
+
+    private String getCookieValue(HttpServletRequest request, String cookieNameToken) {
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals(cookieNameToken)) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+}
+```
+
+实现完上面这段代码后，我们的 Controller 就变得非常清爽了
+
+**之前的版本：**
+
+```java
+@GetMapping("/to_list")
+public String toGoodList(HttpServletResponse response,
+                         Model model,
+                         @CookieValue(value = MiaoshaUserServiceImpl.COOKIE_NAME_TOKEN, required = false) String cookieToken,
+                         @RequestParam(value = MiaoshaUserServiceImpl.COOKIE_NAME_TOKEN, required = false) String paramToken) {
+    if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
+        return "login";
+    }
+    String token = StringUtils.isEmpty(cookieToken) ? paramToken : cookieToken ;
+    MiaoshaUser user = miaoshaUserService.getByToken(response, token);
+    LOGGER.info("user:{}", user);
+    model.addAttribute("user", user);
+    return "goods_list";
+}
+```
+
+**优化后的版本：**
+
+```java
+@GetMapping("/to_list")
+public String toGoodList(Model model, MiaoshaUser miaoshaUser) {
+    LOGGER.info("miaoshaUser:{}", miaoshaUser);
+    model.addAttribute("user", miaoshaUser);
+    return "goods_list";
+}
+```
+

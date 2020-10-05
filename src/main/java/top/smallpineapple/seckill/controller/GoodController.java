@@ -33,23 +33,8 @@ public class GoodController {
     @Autowired
     private MiaoshaUserService miaoshaUserService;
 
-    /**
-     *
-     * @param model
-     * @param cookieToken cookie 中的 token, 如果用户禁用cookie则采用url重写
-     * @param paramToken 如果是移动端, 有可能不是存 cookie, 而是从路径中传token过来
-     * @return
-     */
     @GetMapping("/to_list")
-    public String toGoodList(HttpServletResponse response,
-                             Model model,
-                             @CookieValue(value = MiaoshaUserServiceImpl.COOKIE_NAME_TOKEN, required = false) String cookieToken,
-                             @RequestParam(value = MiaoshaUserServiceImpl.COOKIE_NAME_TOKEN, required = false) String paramToken) {
-        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
-            return "login";
-        }
-        String token = StringUtils.isEmpty(cookieToken) ? paramToken : cookieToken ;
-        MiaoshaUser user = miaoshaUserService.getByToken(response, token);
+    public String toGoodList(Model model, MiaoshaUser user) {
         LOGGER.info("user:{}", user);
         model.addAttribute("user", user);
         return "goods_list";
