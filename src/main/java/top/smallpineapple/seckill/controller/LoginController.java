@@ -14,6 +14,7 @@ import top.smallpineapple.seckill.service.MiaoshaUserService;
 import top.smallpineapple.seckill.util.ValidatorUtil;
 import top.smallpineapple.seckill.vo.LoginVo;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 /**
@@ -39,9 +40,9 @@ public class LoginController {
 
      @RequestMapping("/do_login")
      @ResponseBody
-     public Result<Boolean> doLogin(@Valid LoginVo loginVo) {
+     public Result<Boolean> doLogin(HttpServletResponse response, @Valid LoginVo loginVo) {
          LOGGER.info("loginVo:{}", loginVo);
-         boolean isSuccess = miaoshaUserService.login(loginVo);
+         boolean isSuccess = miaoshaUserService.login(response, loginVo);
          return isSuccess ? Result.success(null) : Result.error(CodeMsg.SERVER_ERROR);
      }
 
