@@ -305,9 +305,18 @@ public class GlobleException extends RuntimeException {
 
 ### 功能实现
 
+> 基本的页面和查询显示功能就不在这里展出了，大家跟着视频做也能够实现，这篇笔记主要针对该项目最重要的技术点进行阐述和讲解。
 
+1、只单纯地使用数据 SQL 语句 + 事务进行秒杀
 
+```sql
+UPDATE miaosha_goods SET stock_count = stock_count - 1 WHERE id = #{goodsId}
+```
 
+出现的问题：
+
+- 超卖：可能出现商品超卖，导致
+- 并发量低：
 
 ## 常见错误
 
@@ -438,4 +447,21 @@ public String toGoodList(Model model, MiaoshaUser miaoshaUser) {
     return "goods_list";
 }
 ```
+
+### 数据库主键自增策略
+
+我们在企业级一般不会用自增主键，因为数据很容易就被别人全部遍历起来了，我们一般都使用 `snowflake` 算法
+
+### 如何在做插入数据时把插入后数据的主键id返回
+
+```java
+@SelectKey(keyColumn = "id", keyProperty = "id", resultType = Long.class, before = false, statement = "SELECT last_insert_id()")
+Long insert(OrderInfo orderInfo);
+```
+
+
+
+### 如何保证 Redis 和 MySQL 的一致性
+
+我们无法严格保证两个数据库的数据一致性，因为我们无论先操作哪一个数据库，系统在某一段时间内都会处于不稳定的**中间态**。所以我们只能说**尽最大努力保证数据一致性**。
 

@@ -24,8 +24,9 @@ public class CodeMsg {
     //商品模块 5003XX
     public static CodeMsg REPEATE_SECKILL = new CodeMsg(500501, "不能重复秒杀");
     public static CodeMsg SECKILL_FAIL = new CodeMsg(500502, "秒杀失败");
-    private int code;
-    private String msg;
+
+    public int code;
+    public String msg;
 
 
     private CodeMsg() {
@@ -57,6 +58,8 @@ public class CodeMsg {
         String message = String.format(this.msg, args);
         return new CodeMsg(code, message);
     }
+
+
 
     @Override
     public String toString() {
