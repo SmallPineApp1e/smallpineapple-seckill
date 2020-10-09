@@ -49,3 +49,6 @@ mybatis:
     default-fetch-size: 100 #
     default-statement-timeout: 3000 # 每条语句最大等待时间
   mapper-locations: classpath:com/smallpineapple/seckill/dao/*.xml # 扫描 mapper 文件, 用于 mapper 接口和配置文件的映射
+
+server:
+  port: 9875

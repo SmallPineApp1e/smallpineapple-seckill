@@ -42,7 +42,7 @@ public class MiaoshaUserServiceImpl implements MiaoshaUserService {
     }
 
     @Override
-    public boolean login(HttpServletResponse response, LoginVo loginVo) {
+    public String login(HttpServletResponse response, LoginVo loginVo) {
         if (Objects.isNull(loginVo)) {
             throw new GlobleException(CodeMsg.SERVER_ERROR);
         }
@@ -63,7 +63,7 @@ public class MiaoshaUserServiceImpl implements MiaoshaUserService {
         String token = UUIDUtil.createUUID();
         addCookie(response, token, miaoshaUser);
 
-        return true;
+        return token;
     }
 
     @Override

@@ -32,14 +32,15 @@ spring:
     port: 6379
     jedis:
       pool:
-        # 最大空闲线程 10
-        max-idle: 10
-        # 最大等待时间 3 ms
-        max-wait: 3
-        # 最大活跃线程 10
-        max-active: 10
+        # 最大空闲线程 500
+        max-idle: 500
+        # 最大等待时间 5000 ms
+        max-wait: 5000
+        # 最大活跃线程 1000
+        max-active: 1000
         # 空闲线程经过 3 秒后被回收
         time-between-eviction-runs: 3000
+    password: 1030.jie
 
 # mybatis
 mybatis:
@@ -51,4 +52,4 @@ mybatis:
   mapper-locations: classpath:com/smallpineapple/seckill/dao/*.xml # 扫描 mapper 文件, 用于 mapper 接口和配置文件的映射
 
 server:
-  port: 9875
+  port: 9876

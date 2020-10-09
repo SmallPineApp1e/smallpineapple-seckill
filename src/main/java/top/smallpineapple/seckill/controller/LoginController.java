@@ -40,10 +40,10 @@ public class LoginController {
 
      @RequestMapping("/do_login")
      @ResponseBody
-     public Result<Boolean> doLogin(HttpServletResponse response, @Valid LoginVo loginVo) {
+     public Result<String> doLogin(HttpServletResponse response, @Valid LoginVo loginVo) {
          LOGGER.info("loginVo:{}", loginVo);
-         boolean isSuccess = miaoshaUserService.login(response, loginVo);
-         return isSuccess ? Result.success(null) : Result.error(CodeMsg.SERVER_ERROR);
+         String token = miaoshaUserService.login(response, loginVo);
+         return Result.success(token);
      }
 
 }

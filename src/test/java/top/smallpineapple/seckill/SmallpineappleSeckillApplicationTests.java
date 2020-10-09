@@ -46,7 +46,7 @@ class SmallpineappleSeckillApplicationTests {
     @Test
     public void testMd5() {
         String inputPassword = "123456"; // 6013ac8f9a8a066745fbcaca225e3436
-        log.info("md5(明文+固定salt):{}", MD5Util.inputPassFormPass(inputPassword));
+        log.info("md5(明文+固定salt):{}", MD5Util.inputPass2FormPass(inputPassword));
     }
 
 }

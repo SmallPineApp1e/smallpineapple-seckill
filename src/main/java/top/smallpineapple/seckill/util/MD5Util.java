@@ -28,7 +28,7 @@ public class MD5Util {
      * @param formPass 表单提交的密码 MD5(明文 + 盐)
      * @return 第一次加盐且md5散列的密码串
      */
-    public static String inputPassFormPass(String formPass) {
+    public static String inputPass2FormPass(String formPass) {
         return md5("" + SALT.charAt(0) + SALT.charAt(2) + formPass + SALT.charAt(5) + SALT.charAt(4));
     }
 
@@ -49,7 +49,7 @@ public class MD5Util {
      * @return 数据库需要存储的密码串
      */
     public static String inputPass2DbPass(String src, String saltDb) {
-        return formPass2DbPass(inputPassFormPass(src), saltDb);
+        return formPass2DbPass(inputPass2FormPass(src), saltDb);
     }
 
 }
