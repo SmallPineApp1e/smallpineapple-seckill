@@ -318,6 +318,60 @@ UPDATE miaosha_goods SET stock_count = stock_count - 1 WHERE id = #{goodsId}
 - 超卖：可能出现商品超卖，导致
 - 并发量低：
 
+## 页面优化技术
+
+通过各种手段的缓存，减少对数据库的访问，提高并发量
+
+页面静态化处理，前后端分离
+
+### 页面缓存
+
+ 取缓存，渲染模板，返回客户端
+
+客户端在访问页面时，不希望每次都需要客户端去渲染页面模板，这样会导致并发量下降，如果一个用户下载 1KB 的数据，那么10万个用户需要下载 1KB 的数据，就会非常慢。
+
+我们可以将第一次渲染好的页面以 HTML 形式保存在 Redis 中，每次客户端请求访问页面时，都去判断 Redis 是否存在该页面，如果存在则直接返回所有的 HTML，不需要重新渲染。
+
+页面存在 Redis 中的时间不能过长，因为商品信息有可能会随时更新，通常采用 1 分钟的过期时间保存在 Redis。
+
+```java
+@GetMapping("/to_list")
+@ResponseBody
+public String toGoodList(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser user) {
+    // 先去缓存中查找已经之前渲染好的 HTML 页面
+    String html = (String) redisUtil.get(GoodsKey.getGoodsList.getPrefix());
+    if (!StringUtils.isEmpty(html)) {
+        return html;
+    }
+    // 手动渲染
+    List<GoodsVo> goodsVos = goodsService.listGoodsVo();
+    model.addAttribute("goodsList", goodsVos);
+    model.addAttribute("user", user);
+    WebContext context = new WebContext(request, response, request.getServletContext(),
+                                        request.getLocale(), model.asMap());
+    html = thymeleafViewResolver.getTemplateEngine().process("goods_list", context);
+    if (!StringUtils.isEmpty(html)) {
+        // 将初次渲染好的 HTML 页面保存到 Redis 中
+        redisUtil.set(GoodsKey.getGoodsList.getPrefix(), html, GoodsKey.getGoodsList.expireSeconds());
+    }
+    return html;
+}
+```
+
+### 对象缓存
+
+
+
+### 页面静态化
+
+
+
+### 前后端分离
+
+
+
+### 
+
 ## 常见错误
 
 ### 导入 JS 包却找不到
